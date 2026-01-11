@@ -3,6 +3,14 @@ inputs:
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
 
+languages:
+  javascript:
+    enable: true
+    package: nodejs_20 # for Web / Wasm execution
+  python:
+    enable: true
+    version: "3.11" # for demo server
+    
 # If you're using non-OSS software, you can set allowUnfree to true.
 # allowUnfree: true
 

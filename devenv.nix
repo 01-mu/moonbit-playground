@@ -1,11 +1,21 @@
 { pkgs, lib, config, inputs, ... }:
 
 {
+  cachix.enable = false;
+
   # https://devenv.sh/basics/
   env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = [ pkgs.git ];
+  packages = [
+    pkgs.git
+    pkgs.python312
+    pkgs.nodejs_20
+  ];
+
+  # Node.js
+  languages.javascript.enable = true;
+  languages.javascript.corepack.enable = true;   # npm/pnpm/yarn wrapper :contentReference[oaicite:1]{index=1}
 
   # https://devenv.sh/languages/
   # languages.rust.enable = true;
@@ -25,6 +35,9 @@
   enterShell = ''
     hello         # Run scripts directly
     git --version # Use packages
+    python --version
+    node --version
+    npm --version
   '';
 
   # https://devenv.sh/tasks/
