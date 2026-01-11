@@ -6,8 +6,8 @@
 }:
 
 let
-  # 公式の latest を利用する
-  version = "latest";
+  # 公式の latest を sha256 で固定したバージョン
+  version = "0.1.20260110";
 
   toolchainUrl =
     "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
@@ -15,25 +15,26 @@ let
   coreUrl =
     "https://cli.moonbitlang.com/cores/core-latest.tar.gz";
 
-  toolchainSha256 = "sha256-idh2YhlKSi18w0Wx/s+LvkLgoA7n5oyPLkB/Pz2ktR8=";
+  toolchainSha256 = "sha256-aW8nfLXSHv3kIhkBuO9dkMkdetjeX603hiyqiDum7BA=";
   coreSha256      = "sha256-vxLc4KkthJEeDTDLdKxz+A0DqJ8JM6S9qH4vZkegCIc=";
 
   commonCurlOpts = [
     "-L"
-    "-A" "curl/8.0.0"
+    "-A"
+    "curl/8.0.0"
   ];
 
   toolchain = fetchzip {
     url = toolchainUrl;
     sha256 = toolchainSha256;
     stripRoot = false;
-    curlOpts = commonCurlOpts;
+    curlOptsList = commonCurlOpts;
   };
 
   coreTar = fetchurl {
     url = coreUrl;
     sha256 = coreSha256;
-    curlOpts = commonCurlOpts;
+    curlOptsList = commonCurlOpts;
   };
 in
 stdenv.mkDerivation {
@@ -44,6 +45,7 @@ stdenv.mkDerivation {
 
   dontUnpack = true;
   dontBuild = true;
+  dontFixup = true;
 
   installPhase = ''
     set -euo pipefail
@@ -55,10 +57,11 @@ stdenv.mkDerivation {
     cp -R "${toolchain}/"* "$MOON_HOME/"
 
     # 2) core標準ライブラリを $MOON_HOME/lib/core に展開
-    mkdir -p "$MOON_HOME/lib"
-    tar -xzf "${coreTar}" -C "$MOON_HOME/lib"
+    #    toolchain の lib が read-only なので書き込み可能にする
+    chmod -R u+w "$MOON_HOME/lib"
+    tar -C "$MOON_HOME/lib" -xzf "${coreTar}"
 
-    # 3) coreをbundle:contentReference[oaicite:1]{index=1}
+    # 3) coreをbundle
     export PATH="$MOON_HOME/bin:$PATH"
     if [ -d "$MOON_HOME/lib/core" ] && [ -x "$MOON_HOME/bin/moon" ]; then
       (cd "$MOON_HOME/lib/core" && moon bundle --target all) || true
@@ -67,10 +70,12 @@ stdenv.mkDerivation {
     # 4) wrapper：MOON_HOMEを固定して PATH に載せる
     mkdir -p "$out/bin"
     for exe in "$MOON_HOME/bin/"*; do
-      name="$(basename "$exe")"
-      makeWrapper "$exe" "$out/bin/$name" \
-        --set-default MOON_HOME "$MOON_HOME" \
-        --prefix PATH : "$MOON_HOME/bin"
+      if [ -f "$exe" ] && [ -x "$exe" ]; then
+        name="$(basename "$exe")"
+        makeWrapper "$exe" "$out/bin/$name" \
+          --set-default MOON_HOME "$MOON_HOME" \
+          --prefix PATH : "$MOON_HOME/bin"
+      fi
     done
   '';
 
