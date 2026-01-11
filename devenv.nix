@@ -11,6 +11,7 @@
     pkgs.git
     pkgs.python312
     pkgs.nodejs_20
+    (pkgs.callPackage ./nix/moonbit.nix {})
   ];
 
   # Node.js
@@ -38,6 +39,7 @@
     python --version
     node --version
     npm --version
+    moon version
   '';
 
   # https://devenv.sh/tasks/
