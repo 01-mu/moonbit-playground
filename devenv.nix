@@ -1,5 +1,8 @@
 { pkgs, lib, config, inputs, ... }:
 
+let
+  moonbit = pkgs.callPackage ./nix/moonbit.nix {};
+in
 {
   cachix.enable = true;
 
@@ -11,7 +14,7 @@
     pkgs.git
     pkgs.python312
     pkgs.nodejs_20
-    (pkgs.callPackage ./nix/moonbit.nix {})
+    moonbit
   ];
 
   # Node.js
