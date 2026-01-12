@@ -10,7 +10,7 @@ devenv.local.yaml
 .pre-commit-config.yaml
 
 # MoonBit
-target/
-_build/
+*/target
+*/_build/
 *.wasm
 
