@@ -2,7 +2,7 @@
   "is-main": true,
   "link": {
     "wasm": {
-      "exports": ["add"]
+      "exports": ["tl_init", "tl_step", "tl_light"]
     }
   }
 }
